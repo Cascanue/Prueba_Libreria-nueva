@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>CU-02: Registrar Cliente</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="contenedor">
+        <h1>👤 Registrar Nuevo Cliente</h1>
+        <form id="formCliente">
+            <input type="text" id="documento" placeholder="DNI o RUC" required>
+            <input type="text" id="nombre" placeholder="Nombre completo" required>
+            <input type="text" id="telefono" placeholder="Teléfono" required>
+            <input type="email" id="correo" placeholder="Correo electrónico" required>
+            <button type="submit">Guardar Cliente</button>
+        </form>
+        <p id="mensaje"></p>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
