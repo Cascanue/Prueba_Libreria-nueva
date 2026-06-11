@@ -17,7 +17,7 @@ formCliente.addEventListener('submit', async (evento) => {
 
     try {
         // Viajamos al servidor enviando los datos
-        const respuesta = await fetch('http://localhost:3000/api/registrar-cliente', {
+        const respuesta = await fetch('https://bookcenter-backend.onrender.com', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
