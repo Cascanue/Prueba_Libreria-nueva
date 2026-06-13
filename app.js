@@ -7,7 +7,7 @@ const mensaje = document.getElementById('mensaje');
 const listaProductos = document.getElementById('listaProductos');
 
 // IP DE CONEXIÓN: Cambiar por tu link de Render cuando lo subas a internet
-const URL_BACKEND = 'https://bookcenter-backend.onrender.com/api/registrar-cliente'; 
+const URL_BACKEND = 'https://bookcenter-backend.onrender.com'; 
 
 // Función para cargar y pintar los productos que están guardados en Aiven
 async function cargarCatalogo() {
