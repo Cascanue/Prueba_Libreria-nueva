@@ -65,6 +65,8 @@
     </div>
     <div class="barra-inferior"></div>
 
+    <script src="js/config.js"></script>
+
     <script>
         
         // Lógica del ojito
@@ -77,20 +79,35 @@
             }
         });
 
-        // Simulación de Login Temporal (Hasta que conectemos la base de datos)
-        document.getElementById('formularioLogin').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const usuario = document.getElementById('usuario').value;
-            
-            // Lógica provisional para que prueben los roles
-            let rol = 'vendedor'; // por defecto
-            if(usuario === 'admin') rol = 'administrador';
-            if(usuario === 'cajero') rol = 'cajero';
-            
-            // Guardamos el rol en la memoria del navegador y mandamos al menú
-            localStorage.setItem('rolUsuario', rol);
-            window.location.href = 'menu.html';
+        // Lógica de Login Real
+
+document.getElementById('formularioLogin').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const usuario = document.getElementById('usuario').value;
+    const password = document.getElementById('password').value;
+    
+    try {
+        const respuesta = await fetch(`${URL_BACKEND}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: usuario, password: password })
         });
+        
+        const resultado = await respuesta.json();
+        
+        if (resultado.exito) {
+            // Guardamos el rol y el ID del usuario en el navegador
+            localStorage.setItem('rolUsuario', resultado.usuario.nombre_rol.toLowerCase());
+            localStorage.setItem('idUsuario', resultado.usuario.id_usuario);
+            localStorage.setItem('nombreUsuario', resultado.usuario.username); // Para saludarlo en el menú
+            window.location.href = 'menu.html';
+        } else {
+            alert("❌ " + resultado.mensaje); // Muestra error si pone mal la clave
+        }
+    } catch (error) {
+        alert("❌ Error de conexión con el servidor.");
+    }
+});
     </script>
 </body>
 </html>

@@ -85,6 +85,8 @@
         </div>
     </div>
 
+    <script src="js/config.js"></script>
+
     <script>
         // Lógica de Validación de Documento (8 para DNI, 11 para RUC)
         const tipoDoc = document.getElementById('tipoDoc');
@@ -106,21 +108,48 @@
         tipoDoc.addEventListener('change', actualizarValidacionDoc);
         actualizarValidacionDoc(); // Ejecutar al cargar
 
-        // Control del envío del formulario
-        document.getElementById('formRegistroCliente').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            // Validar teléfono exactamente 9 dígitos
-            const telefono = document.getElementById('telefono').value;
-            if(telefono.length !== 9) {
-                alert("El teléfono debe tener exactamente 9 dígitos.");
-                return;
-            }
+        // Control del envío del formulario a la Base de Datos Real
 
-            // Aquí iría el fetch() al backend real. 
-            // Por ahora simulamos que guardó exitosamente y mostramos el modal:
-            document.getElementById('modalExito').classList.remove('oculto');
+document.getElementById('formRegistroCliente').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // 1. Validar teléfono
+    const telefono = document.getElementById('telefono').value;
+    if(telefono.length !== 9) {
+        alert("El teléfono debe tener exactamente 9 dígitos.");
+        return;
+    }
+
+    // 2. Armar el paquete de datos
+    const datosCliente = {
+        tipoDoc: document.getElementById('tipoDoc').value,
+        numDoc: document.getElementById('numDoc').value,
+        nombreCompleto: document.getElementById('nombreCompleto').value,
+        telefono: telefono,
+        correo: document.getElementById('correo').value,
+        idCreador: localStorage.getItem('idUsuario') // ¡Sacamos el ID de quien inició sesión!
+    };
+
+    // 3. Enviar al Backend
+    try {
+        const respuesta = await fetch(`${URL_BACKEND}/api/registrar-cliente`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosCliente)
         });
+
+        const resultado = await respuesta.json();
+
+        if (resultado.exito) {
+            // Si el backend dice OK, mostramos tu ventanita verde
+            document.getElementById('modalExito').classList.remove('oculto');
+        } else {
+            alert("❌ " + resultado.mensaje); // Ejemplo: "Este documento ya está registrado"
+        }
+    } catch (error) {
+        alert("❌ Error de comunicación con el servidor.");
+    }
+});
 
         // Función para el botón "Agregar nuevo cliente"
         function agregarNuevo() {

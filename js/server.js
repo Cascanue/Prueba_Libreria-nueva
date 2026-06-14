@@ -9,18 +9,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// A. Configuración de Cloudinary (Toma las llaves del .env)
+// ==========================================
+// A. CONFIGURACIONES (Cloudinary y Multer)
+// ==========================================
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// B. Configuración de Multer (Memoria temporal para recibir la foto)
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// C. Conexión a Aiven MySQL
+// ==========================================
+// B. CONEXIÓN A LA BASE DE DATOS (Aiven MySQL)
+// ==========================================
 const db = mysql.createConnection({
     host: 'mysql-955eb71-bookcenter27.b.aivencloud.com',
     user: 'avnadmin',
@@ -35,43 +38,72 @@ db.connect(err => {
     else console.log('✅ Conectado a Aiven MySQL con éxito.');
 });
 
+// ==========================================
+// C. RUTAS DEL SISTEMA (Endpoints)
+// ==========================================
 
-// D. RUTA 1: Recibir formulario, subir a Cloudinary y guardar en MySQL
-app.post('/api/registrar-producto', upload.single('imagenProducto'), (req, res) => {
-    const { nombre, precio, stock } = req.body;
+// 1. RUTA DE LOGIN (Verifica credenciales y rol)
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
     
-    if (!req.file) {
-        return res.status(400).json({ mensaje: 'Falta subir la imagen del producto' });
-    }
-
-    // 1. Subir el archivo binario directamente a la nube de Cloudinary
-    cloudinary.uploader.upload_stream({ folder: 'bookcenter_productos' }, (error, resultadoCloudinary) => {
-        if (error) {
-            console.error('Error en Cloudinary:', error);
-            return res.status(500).json({ mensaje: 'Error al subir la imagen a la nube' });
+    // Buscamos al usuario y traemos el nombre de su rol
+    const query = `
+        SELECT u.id_usuario, u.username, r.nombre_rol 
+        FROM Usuario u 
+        INNER JOIN Rol r ON u.id_rol = r.id_rol 
+        WHERE u.username = ? AND u.password_hash = ? AND u.is_active = TRUE
+    `;
+    
+    db.query(query, [username, password], (err, results) => {
+        if (err) {
+            console.error('Error en Login:', err);
+            return res.status(500).json({ exito: false, mensaje: 'Error del servidor' });
         }
-
-        // 2. Cloudinary nos regala el link limpio de la foto
-        const linkFoto = resultadoCloudinary.secure_url;
-
-        // 3. Guardamos los textos y ese link en tu MySQL de Aiven
-        const query = 'INSERT INTO Producto (nombre, precio, stock, url_imagen) VALUES (?, ?, ?, ?)';
-        db.query(query, [nombre, precio, stock, linkFoto], (err, results) => {
-            if (err) {
-                console.error('Error en SQL:', err);
-                return res.status(500).json({ mensaje: 'Error al guardar en la base de datos' });
-            }
-            res.status(200).json({ mensaje: '¡Producto y foto guardados exitosamente!' });
-        });
-    }).end(req.file.buffer);
-});
-
-// E. RUTA 2: Traer todos los productos guardados para mostrarlos abajo
-app.get('/api/productos', (req, res) => {
-    db.query('SELECT * FROM Producto', (err, filas) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.status(200).json(filas);
+        
+        if (results.length > 0) {
+            // Usuario encontrado
+            res.status(200).json({ exito: true, usuario: results[0] });
+        } else {
+            // Credenciales incorrectas
+            res.status(401).json({ exito: false, mensaje: 'Usuario o contraseña incorrectos' });
+        }
     });
 });
 
+// 2. RUTA REGISTRAR CLIENTE (Con Auditoría Básica)
+app.post('/api/registrar-cliente', (req, res) => {
+    const { tipoDoc, numDoc, nombreCompleto, telefono, correo, idCreador } = req.body;
+    
+    const query = `
+        INSERT INTO Cliente (tipo_documento, numero_documento, nombre_razon_social, telefono, correo, created_by) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    
+    db.query(query, [tipoDoc, numDoc, nombreCompleto, telefono, correo, idCreador], (err, results) => {
+        if (err) {
+            console.error('Error guardando cliente:', err);
+            // Validar si el DNI/RUC ya existe (numero_documento es UNIQUE en la BD)
+            if (err.code === 'ER_DUP_ENTRY') {
+                return res.status(400).json({ exito: false, mensaje: 'Este documento ya está registrado en el sistema.' });
+            }
+            return res.status(500).json({ exito: false, mensaje: 'Error interno al guardar en la base de datos' });
+        }
+        res.status(200).json({ exito: true, mensaje: 'Cliente registrado exitosamente' });
+    });
+});
+
+// ==========================================
+// D. RUTAS EN PAUSA (Módulo de Productos)
+// ==========================================
+/* Nota: Estas rutas están comentadas para que no den error con la nueva 
+    tabla de la base de datos. Las activaremos y actualizaremos cuando 
+    hagamos el Módulo de Inventario.
+
+app.post('/api/registrar-producto', upload.single('imagenProducto'), (req, res) => { ... });
+app.get('/api/productos', (req, res) => { ... });
+*/
+
+// ==========================================
+// E. ENCENDIDO DEL SERVIDOR
+// ==========================================
 app.listen(3000, () => console.log('🚀 Servidor de Book Center corriendo en el puerto 3000'));
