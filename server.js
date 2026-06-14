@@ -63,6 +63,9 @@ db.getConnection((err, connection) => {
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     
+    // 👇 ESTOS DOS CONSOLE.LOG SON LOS DETECTIVES 👇
+    console.log("INTENTO DE LOGIN -> Usuario:", username, "| Contraseña:", password);
+
     const query = `
         SELECT u.id_usuario, u.username, u.nombre_completo, u.password_hash, r.nombre_rol 
         FROM Usuario u 
@@ -72,9 +75,11 @@ app.post('/api/login', (req, res) => {
 
     db.query(query, [username], (err, results) => {
         if (err) {
-            console.error("Error en la base de datos:", err);
+            console.error("❌ ERROR SQL:", err);
             return res.status(500).json({ exito: false, mensaje: "Error interno del servidor" });
         }
+
+        console.log("🔍 RESULTADO BASE DE DATOS:", results);
 
         if (results.length === 0) {
             return res.status(401).json({ exito: false, mensaje: "Usuario no encontrado" });
@@ -82,12 +87,10 @@ app.post('/api/login', (req, res) => {
 
         const usuario = results[0];
 
-        // Validamos la contraseña (asumiendo que de momento es texto plano como '12345')
         if (password !== usuario.password_hash) {
             return res.status(401).json({ exito: false, mensaje: "Contraseña incorrecta" });
         }
 
-        // Si todo está bien, enviamos los datos al frontend
         res.json({
             exito: true,
             usuario: {
