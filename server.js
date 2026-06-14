@@ -37,10 +37,21 @@ const db = mysql.createPool({
 });
 
 db.getConnection((err, connection) => {
-    if (err) console.error('❌ Error en MySQL:', err);
-    else {
+    if (err) {
+        console.error('❌ Error en MySQL:', err);
+    } else {
         console.log('✅ Conectado a Aiven MySQL con Pool de conexiones.');
-        connection.release();
+        
+        // MODO AUTOMÁTICO: Crea la columna y pone tu nombre apenas enciende
+        const sqlCrear = "ALTER TABLE Usuario ADD COLUMN IF NOT EXISTS nombre_completo VARCHAR(150) NOT NULL DEFAULT 'Usuario del Sistema' AFTER username;";
+        const sqlActualizar = "UPDATE Usuario SET nombre_completo = 'Diego Sebastián' WHERE id_usuario = 1;";
+
+        connection.query(sqlCrear, () => {
+            connection.query(sqlActualizar, () => {
+                console.log('🌟 ¡LISTO! Base de datos actualizada con tu nombre. Ya puedes iniciar sesión.');
+                connection.release();
+            });
+        });
     }
 });
 
@@ -52,27 +63,40 @@ db.getConnection((err, connection) => {
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     
-    // Buscamos al usuario y traemos el nombre de su rol
     const query = `
-        SELECT u.id_usuario, u.username, r.nombre_rol 
+        SELECT u.id_usuario, u.username, u.nombre_completo, u.password_hash, r.nombre_rol 
         FROM Usuario u 
         INNER JOIN Rol r ON u.id_rol = r.id_rol 
-        WHERE u.username = ? AND u.password_hash = ? AND u.is_active = TRUE
+        WHERE u.username = ? AND u.is_active = TRUE
     `;
-    
-    db.query(query, [username, password], (err, results) => {
+
+    db.query(query, [username], (err, results) => {
         if (err) {
-            console.error('Error en Login:', err);
-            return res.status(500).json({ exito: false, mensaje: 'Error del servidor' });
+            console.error("Error en la base de datos:", err);
+            return res.status(500).json({ exito: false, mensaje: "Error interno del servidor" });
         }
-        
-        if (results.length > 0) {
-            // Usuario encontrado
-            res.status(200).json({ exito: true, usuario: results[0] });
-        } else {
-            // Credenciales incorrectas
-            res.status(401).json({ exito: false, mensaje: 'Usuario o contraseña incorrectos' });
+
+        if (results.length === 0) {
+            return res.status(401).json({ exito: false, mensaje: "Usuario no encontrado" });
         }
+
+        const usuario = results[0];
+
+        // Validamos la contraseña (asumiendo que de momento es texto plano como '12345')
+        if (password !== usuario.password_hash) {
+            return res.status(401).json({ exito: false, mensaje: "Contraseña incorrecta" });
+        }
+
+        // Si todo está bien, enviamos los datos al frontend
+        res.json({
+            exito: true,
+            usuario: {
+                id_usuario: usuario.id_usuario,
+                username: usuario.username,
+                nombre_completo: usuario.nombre_completo,
+                nombre_rol: usuario.nombre_rol
+            }
+        });
     });
 });
 
@@ -114,4 +138,23 @@ app.get('/api/productos', (req, res) => { ... });
 // ==========================================
 // Le decimos a Node que use el puerto que Render le dé, o el 3000 si estás en tu PC
 const PORT = process.env.PORT || 3000;
+// ==========================================
+// RUTA TEMPORAL PARA ACTUALIZAR BASE DE DATOS
+// ==========================================
+app.get('/api/setup-db', (req, res) => {
+    // 1. Creamos la columna
+    const sqlCrearColumna = "ALTER TABLE Usuario ADD COLUMN nombre_completo VARCHAR(150) NOT NULL DEFAULT 'Usuario del Sistema' AFTER username;";
+    
+    db.query(sqlCrearColumna, (err) => {
+        // Si hay error, probablemente es porque la columna ya se creó antes. Lo ignoramos y seguimos.
+        
+        // 2. Le asignamos tu nombre real al admin1
+        const sqlActualizarNombre = "UPDATE Usuario SET nombre_completo = 'Diego Sebastián' WHERE id_usuario = 1;";
+        
+        db.query(sqlActualizarNombre, (err2) => {
+            if(err2) return res.send("Hubo un error al actualizar los nombres: " + err2);
+            res.send("<h1 style='color: green; font-family: sans-serif;'>✅ ¡Base de datos actualizada con éxito!</h1><p style='font-family: sans-serif;'>Ya puedes cerrar esta pestaña y volver a tu Login.</p>");
+        });
+    });
+});
 app.listen(PORT, () => console.log(`🚀 Servidor de Book Center corriendo en el puerto ${PORT}`));

@@ -97,9 +97,10 @@ document.getElementById('formularioLogin').addEventListener('submit', async (e) 
         const resultado = await respuesta.json();
         
         if (resultado.exito) {
+            
             localStorage.setItem('rolUsuario', resultado.usuario.nombre_rol.toLowerCase());
             localStorage.setItem('idUsuario', resultado.usuario.id_usuario);
-            localStorage.setItem('nombreUsuario', resultado.usuario.username); // Para saludarlo en el menú
+            localStorage.setItem('nombreUsuario', resultado.usuario.nombre_completo); 
             window.location.href = 'menu.html';
         } else {
             alert("❌ " + resultado.mensaje); // Muestra error si pone mal la clave
