@@ -2,29 +2,100 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Prueba de Fuego: Cloudinary + Aiven</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Book Center - Iniciar Sesión</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .pantalla-login {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .login-contenedor {
+            max-width: 400px;
+            text-align: center;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+        .barra-inferior {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20px;
+            background-color: var(--azul-primario);
+        }
+        .link-recuperar {
+            color: var(--azul-primario);
+            font-size: 0.9rem;
+            text-decoration: none;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+        .link-recuperar:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
-    <div style="max-width: 600px; margin: 20px auto; font-family: sans-serif;">
-        <h1>📦 Registrar Nuevo Producto</h1>
-        
-        <form id="formProducto" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 10px;">
-            <input type="text" id="nombre" placeholder="Nombre del Producto" required>
-            <input type="number" id="precio" step="0.01" placeholder="Precio (S/.)" required>
-            <input type="number" id="stock" placeholder="Stock Actual" required>
-            <label>Seleccionar Imagen del Producto:</label>
-            <input type="file" id="imagenProducto" accept="image/*" required>
-            <button type="submit" style="padding: 10px; cursor: pointer;">Guardar Producto</button>
-        </form>
-        
-        <p id="mensaje" style="font-weight: bold;"></p>
-        <hr>
-        
-        <h2>📚 Catálogo Actual (Desde la Nube)</h2>
-        <div id="listaProductos" style="display: flex; flex-direction: column; gap: 15px;"></div>
-    </div>
+    <div class="pantalla-login">
+        <div class="tarjeta login-contenedor" id="cajaLogin">
+            <img src="https://res.cloudinary.com/dwk77ddoq/image/upload/v1781397979/imagen_2026-06-13_194618193_hkz2d2.png" alt="Logo Book Center" style="margin-bottom: 2rem;">
+            
+            <button class="btn-principal" id="btnIniciarAnimacion">Iniciar Sesión</button>
 
-    <script src="app.js"></script>
+            <form id="formularioLogin" class="oculto" style="text-align: left; margin-top: 1rem;">
+                <div class="input-grupo">
+                    <label>Usuario (DNI)</label>
+                    <input type="text" id="usuario" class="input-moderno" placeholder="Ingrese su DNI" required>
+                </div>
+                
+                <div class="input-grupo">
+                    <label>Contraseña</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="password" id="password" class="input-moderno" placeholder="••••••••" required>
+                        <button type="button" id="btnOjito" style="padding: 0 10px; cursor: pointer; border-radius: 8px; border: 1px solid #ccc;">👁️</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-principal">Ingresar</button>
+                <div style="text-align: center;">
+                    <a href="#" class="link-recuperar" id="linkRecuperar">¿Olvidaste tu contraseña?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="barra-inferior"></div>
+
+    <script>
+        // Animación de despliegue
+        document.getElementById('btnIniciarAnimacion').addEventListener('click', (e) => {
+            e.target.classList.add('oculto');
+            document.getElementById('formularioLogin').classList.remove('oculto');
+        });
+
+        // Lógica del ojito
+        const inputPass = document.getElementById('password');
+        document.getElementById('btnOjito').addEventListener('click', () => {
+            if (inputPass.type === 'password') {
+                inputPass.type = 'text';
+            } else {
+                inputPass.type = 'password';
+            }
+        });
+
+        // Simulación de Login Temporal (Hasta que conectemos la base de datos)
+        document.getElementById('formularioLogin').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const usuario = document.getElementById('usuario').value;
+            
+            // Lógica provisional para que prueben los roles
+            let rol = 'vendedor'; // por defecto
+            if(usuario === 'admin') rol = 'administrador';
+            if(usuario === 'cajero') rol = 'cajero';
+            
+            // Guardamos el rol en la memoria del navegador y mandamos al menú
+            localStorage.setItem('rolUsuario', rol);
+            window.location.href = 'menu.html';
+        });
+    </script>
 </body>
 </html>
