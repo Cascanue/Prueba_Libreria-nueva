@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Center - Menú Principal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .encabezado {
+            background-color: var(--blanco);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--sombra);
+        }
+        .btn-negro {
+            background-color: #000;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .contenedor-menu {
+            max-width: 800px;
+            margin: 3rem auto;
+            text-align: center;
+        }
+        .grid-modulos {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .modulo-card {
+            background: var(--blanco);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--sombra);
+            width: 220px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--azul-oscuro);
+        }
+        .modulo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border: 2px solid var(--azul-primario);
+        }
+        .icono-modulo { font-size: 3rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <header class="encabezado">
+        <a href="index.html" style="color: red; font-weight: bold; text-decoration: none;">Cerrar Sesión</a>
+        <img src="https://res.cloudinary.com/dwk77ddoq/image/upload/v1781397979/imagen_2026-06-13_194618193_hkz2d2.png" alt="Logo">
+        <a href="#" class="btn-negro oculto" id="btnAdmin">Administración</a>
+    </header>
+
+    <div class="contenedor-menu">
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">¡Bienvenido, Yair Vasquez!</h1>
+        <p style="color: var(--gris); font-size: 1.2rem;">Seleccione el módulo con el que desea trabajar hoy.</p>
+
+        <div class="grid-modulos">
+            <a href="registrar-cliente.html" class="modulo-card" id="modCliente">
+                <div class="icono-modulo">📝</div>
+                <h3>Registrar Cliente</h3>
+            </a>
+
+            <a href="registrar-pedido.html" class="modulo-card oculto" id="modPedido">
+                <div class="icono-modulo">🧺</div>
+                <h3>Registrar Pedido</h3>
+            </a>
+
+            <a href="procesar-pago.html" class="modulo-card oculto" id="modPago">
+                <div class="icono-modulo">💵</div>
+                <h3>Procesar Pago</h3>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Lógica de Protección y Roles
+        const rolActual = localStorage.getItem('rolUsuario');
+        
+        // Si alguien intenta entrar sin loguearse, lo pateamos al index
+        if (!rolActual) window.location.href = 'index.html';
+
+        // Lógica de visualización según el rol
+        if (rolActual === 'vendedor') {
+            document.getElementById('modPedido').classList.remove('oculto');
+            // Cliente ya es visible por defecto
+        } 
+        else if (rolActual === 'cajero') {
+            document.getElementById('modPago').classList.remove('oculto');
+            // Cliente ya es visible por defecto
+        } 
+        else if (rolActual === 'administrador') {
+            document.getElementById('modPedido').classList.remove('oculto');
+            document.getElementById('modPago').classList.remove('oculto');
+            document.getElementById('btnAdmin').classList.remove('oculto');
+        }
+    </script>
+</body>
+</html>

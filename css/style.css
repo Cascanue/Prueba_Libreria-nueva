@@ -1,0 +1,80 @@
+/* css/style.css */
+:root {
+    --azul-oscuro: #0f172a;
+    --azul-primario: #2563eb;
+    --azul-claro: #eff6ff;
+    --blanco: #ffffff;
+    --gris: #64748b;
+    --sombra: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--azul-claro);
+    color: var(--azul-oscuro);
+    min-height: 100vh;
+}
+
+/* Clases generales para contenedores */
+.tarjeta {
+    background: var(--blanco);
+    border-radius: 12px;
+    box-shadow: var(--sombra);
+    padding: 2rem;
+    width: 100%;
+}
+
+/* Inputs modernos */
+.input-grupo {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.input-grupo label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--gris);
+}
+
+.input-moderno {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.input-moderno:focus {
+    border-color: var(--azul-primario);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Botones interactivos */
+.btn-principal {
+    background-color: var(--azul-primario);
+    color: var(--blanco);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.btn-principal:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-2px); /* Efecto de flotar */
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+}
+
+/* Utilidades */
+.oculto { display: none !important; }
