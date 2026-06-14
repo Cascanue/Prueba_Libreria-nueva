@@ -78,3 +78,29 @@ body {
 
 /* Utilidades */
 .oculto { display: none !important; }
+
+/* Nuevos estilos para el Header y Botón Rojo */
+.encabezado {
+    background-color: var(--blanco);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: center; /* Esto ancla el logo al centro siempre */
+    align-items: center;
+    box-shadow: var(--sombra);
+    position: relative;
+}
+.zona-izquierda { position: absolute; left: 2rem; }
+.zona-derecha { position: absolute; right: 2rem; }
+
+.logo-header { max-height: 40px; width: auto; object-fit: contain; }
+
+.btn-rojo {
+    background-color: #ef4444;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+.btn-rojo:hover { background-color: #dc2626; }

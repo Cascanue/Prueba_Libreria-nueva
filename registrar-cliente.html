@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Center - Registrar Cliente</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .contenedor-modulo { max-width: 600px; margin: 3rem auto; }
+        .fila-doble { display: flex; gap: 1rem; }
+        .fila-doble .input-grupo { flex: 1; }
+        
+        /* Ventanita de éxito emergente */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .modal-contenido {
+            background: white; padding: 2rem; border-radius: 12px;
+            text-align: center; max-width: 400px; width: 100%;
+        }
+        .icono-check { font-size: 4rem; color: #22c55e; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <header class="encabezado">
+        <div class="zona-izquierda"><a href="menu.html" class="btn-rojo" style="background-color: var(--gris);">Volver al Menú</a></div>
+        <img src="TU_LOGO_AQUI" alt="Logo" class="logo-header">
+        <div class="zona-derecha"><span style="font-weight: bold; color: var(--azul-primario);">Módulo Ventas</span></div>
+    </header>
+
+    <div class="contenedor-modulo">
+        <div class="tarjeta">
+            <h2 style="margin-bottom: 1.5rem; text-align: center;">Registrar Nuevo Cliente</h2>
+            
+            <form id="formRegistroCliente">
+                <div class="fila-doble">
+                    <div class="input-grupo" style="flex: 0.4;">
+                        <label>Documento</label>
+                        <select id="tipoDoc" class="input-moderno">
+                            <option value="DNI">DNI</option>
+                            <option value="RUC">RUC</option>
+                        </select>
+                    </div>
+                    <div class="input-grupo" style="flex: 1;">
+                        <label>N° de Documento</label>
+                        <input type="text" id="numDoc" class="input-moderno" placeholder="Ingrese dígitos" required 
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                </div>
+
+                <div class="input-grupo">
+                    <label>Apellidos y Nombres / Razón Social</label>
+                    <input type="text" id="nombreCompleto" class="input-moderno" placeholder="Ej. Vasquez Marquina..." required
+                           oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')">
+                </div>
+
+                <div class="fila-doble">
+                    <div class="input-grupo">
+                        <label>Teléfono</label>
+                        <input type="text" id="telefono" class="input-moderno" placeholder="9 dígitos" required maxlength="9"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                    <div class="input-grupo">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="correo" class="input-moderno" placeholder="ejemplo@correo.com" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-principal" style="margin-top: 1rem;">Guardar Cliente</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalExito" class="modal-overlay oculto">
+        <div class="modal-contenido">
+            <div class="icono-check">✓</div>
+            <h2 style="margin-bottom: 1rem;">¡Usuario Guardado!</h2>
+            <p style="color: var(--gris); margin-bottom: 1.5rem;">Los datos del cliente se han registrado correctamente en el sistema.</p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button type="button" class="btn-principal" onclick="agregarNuevo()">Agregar nuevo cliente</button>
+                <a href="menu.html" class="btn-rojo" style="background-color: var(--gris); text-align: center;">Regresar al menú</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica de Validación de Documento (8 para DNI, 11 para RUC)
+        const tipoDoc = document.getElementById('tipoDoc');
+        const numDoc = document.getElementById('numDoc');
+
+        function actualizarValidacionDoc() {
+            if (tipoDoc.value === 'DNI') {
+                numDoc.maxLength = 8;
+                numDoc.setAttribute('minlength', '8');
+                numDoc.placeholder = "8 dígitos";
+            } else {
+                numDoc.maxLength = 11;
+                numDoc.setAttribute('minlength', '11');
+                numDoc.placeholder = "11 dígitos";
+            }
+            numDoc.value = ""; // Limpiar al cambiar
+        }
+
+        tipoDoc.addEventListener('change', actualizarValidacionDoc);
+        actualizarValidacionDoc(); // Ejecutar al cargar
+
+        // Control del envío del formulario
+        document.getElementById('formRegistroCliente').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Validar teléfono exactamente 9 dígitos
+            const telefono = document.getElementById('telefono').value;
+            if(telefono.length !== 9) {
+                alert("El teléfono debe tener exactamente 9 dígitos.");
+                return;
+            }
+
+            // Aquí iría el fetch() al backend real. 
+            // Por ahora simulamos que guardó exitosamente y mostramos el modal:
+            document.getElementById('modalExito').classList.remove('oculto');
+        });
+
+        // Función para el botón "Agregar nuevo cliente"
+        function agregarNuevo() {
+            document.getElementById('formRegistroCliente').reset();
+            document.getElementById('modalExito').classList.add('oculto');
+            actualizarValidacionDoc(); // Resetear las reglas del input
+        }
+    </script>
+</body>
+</html>

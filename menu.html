@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Book Center - Menú Principal</title>
     <link rel="stylesheet" href="css/style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         .encabezado {
             background-color: var(--blanco);
@@ -54,10 +55,16 @@
 </head>
 <body>
     <header class="encabezado">
-        <a href="index.html" style="color: red; font-weight: bold; text-decoration: none;">Cerrar Sesión</a>
-        <img src="https://res.cloudinary.com/dwk77ddoq/image/upload/v1781397979/imagen_2026-06-13_194618193_hkz2d2.png" alt="Logo">
+    <div class="zona-izquierda">
+        <a href="index.html" class="btn-rojo">Cerrar Sesión</a>
+    </div>
+    
+    <img src="https://res.cloudinary.com/dwk77ddoq/image/upload/v1781397979/imagen_2026-06-13_194618193_hkz2d2.png" alt="Logo" class="logo-header">
+    
+    <div class="zona-derecha">
         <a href="#" class="btn-negro oculto" id="btnAdmin">Administración</a>
-    </header>
+    </div>
+</header>
 
     <div class="contenedor-menu">
         <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">¡Bienvenido, Yair Vasquez!</h1>
@@ -65,17 +72,17 @@
 
         <div class="grid-modulos">
             <a href="registrar-cliente.html" class="modulo-card" id="modCliente">
-                <div class="icono-modulo">📝</div>
+                <i class='bx bx-user icono-modulo'></i>
                 <h3>Registrar Cliente</h3>
             </a>
 
             <a href="registrar-pedido.html" class="modulo-card oculto" id="modPedido">
-                <div class="icono-modulo">🧺</div>
+                <i class='bx bx-basket icono-modulo'></i>
                 <h3>Registrar Pedido</h3>
             </a>
 
             <a href="procesar-pago.html" class="modulo-card oculto" id="modPago">
-                <div class="icono-modulo">💵</div>
+                <i class='bx bx-wallet icono-modulo'></i>
                 <h3>Procesar Pago</h3>
             </a>
         </div>

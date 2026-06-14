@@ -40,9 +40,9 @@
         <div class="tarjeta login-contenedor" id="cajaLogin">
             <img src="https://res.cloudinary.com/dwk77ddoq/image/upload/v1781397979/imagen_2026-06-13_194618193_hkz2d2.png" alt="Logo Book Center" style="margin-bottom: 2rem;">
             
-            <button class="btn-principal" id="btnIniciarAnimacion">Iniciar Sesión</button>
+            
 
-            <form id="formularioLogin" class="oculto" style="text-align: left; margin-top: 1rem;">
+            <form id="formularioLogin" style="text-align: left; margin-top: 1rem;">
                 <div class="input-grupo">
                     <label>Usuario (DNI)</label>
                     <input type="text" id="usuario" class="input-moderno" placeholder="Ingrese su DNI" required>
@@ -66,12 +66,7 @@
     <div class="barra-inferior"></div>
 
     <script>
-        // Animación de despliegue
-        document.getElementById('btnIniciarAnimacion').addEventListener('click', (e) => {
-            e.target.classList.add('oculto');
-            document.getElementById('formularioLogin').classList.remove('oculto');
-        });
-
+        
         // Lógica del ojito
         const inputPass = document.getElementById('password');
         document.getElementById('btnOjito').addEventListener('click', () => {
