@@ -97,7 +97,6 @@ document.getElementById('formularioLogin').addEventListener('submit', async (e) 
         const resultado = await respuesta.json();
         
         if (resultado.exito) {
-            // Guardamos el rol y el ID del usuario en el navegador
             localStorage.setItem('rolUsuario', resultado.usuario.nombre_rol.toLowerCase());
             localStorage.setItem('idUsuario', resultado.usuario.id_usuario);
             localStorage.setItem('nombreUsuario', resultado.usuario.username); // Para saludarlo en el menú
