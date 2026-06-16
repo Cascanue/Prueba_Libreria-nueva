@@ -101,7 +101,7 @@ document.getElementById('formularioLogin').addEventListener('submit', async (e) 
             localStorage.setItem('rolUsuario', resultado.usuario.nombre_rol.toLowerCase());
             localStorage.setItem('idUsuario', resultado.usuario.id_usuario);
             localStorage.setItem('nombreUsuario', resultado.usuario.nombre_completo); 
-            window.location.href = 'menu.html';
+            window.location.href = '/menu';
         } else {
             alert("❌ " + resultado.mensaje); // Muestra error si pone mal la clave
         }
