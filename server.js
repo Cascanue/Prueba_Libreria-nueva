@@ -126,15 +126,55 @@ app.post('/api/registrar-cliente', (req, res) => {
 });
 
 // ==========================================
-// D. RUTAS EN PAUSA (Módulo de Productos)
+// D. RUTAS DE INVENTARIO Y VENTAS
 // ==========================================
-/* Nota: Estas rutas están comentadas para que no den error con la nueva 
-    tabla de la base de datos. Las activaremos y actualizaremos cuando 
-    hagamos el Módulo de Inventario.
 
-app.post('/api/registrar-producto', upload.single('imagenProducto'), (req, res) => { ... });
-app.get('/api/productos', (req, res) => { ... });
-*/
+// 3. OBTENER CATEGORÍAS
+app.get('/api/categorias', (req, res) => {
+    const query = 'SELECT id_categoria, nombre, icono FROM Categoria WHERE is_active = 1';
+    
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error al obtener categorías:', err);
+            return res.status(500).json({ error: 'Error al obtener categorías' });
+        }
+        res.json(results);
+    });
+});
+
+// 4. OBTENER PRODUCTOS
+app.get('/api/productos', (req, res) => {
+    const query = `
+        SELECT id_producto, codigo, nombre, descripcion, id_categoria, url_imagen, precio_venta, stock_actual 
+        FROM Producto 
+        WHERE is_active = 1
+    `;
+    
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error al obtener productos:', err);
+            return res.status(500).json({ error: 'Error al obtener productos' });
+        }
+        res.json(results);
+    });
+});
+
+// 5. OBTENER CLIENTES (Para el buscador del modal)
+app.get('/api/clientes', (req, res) => {
+    // Usamos 'AS' para renombrar las columnas en la consulta y que encajen perfecto con tu frontend
+    const query = `
+        SELECT id_cliente, nombre_razon_social AS nombre, tipo_documento, numero_documento AS num_documento 
+        FROM Cliente
+    `;
+    
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error al obtener clientes:', err);
+            return res.status(500).json({ error: 'Error al obtener clientes' });
+        }
+        res.json(results);
+    });
+});
 
 // ==========================================
 // E. ENCENDIDO DEL SERVIDOR

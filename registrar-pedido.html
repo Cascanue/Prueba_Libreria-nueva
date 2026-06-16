@@ -370,6 +370,7 @@
             font-family: inherit;
             -moz-appearance: textfield;
             appearance: textfield;
+            appearance: textfield;
         }
 
         .input-cantidad::-webkit-inner-spin-button,
@@ -717,47 +718,16 @@
     <script src="js/config.js"></script>
     <script>
         // =============================================
-        // DATOS PROVISIONALES (se reemplazarán con API)
+        // CONFIGURACIÓN Y ESTADO GLOBAL (Desde BD)
         // =============================================
-        const CATEGORIAS = [
-            { id: 0, nombre: 'Todos',       icono: 'bx-grid-alt' },
-            { id: 1, nombre: 'Cuadernos',   icono: 'bx-book' },
-            { id: 2, nombre: 'Utensilios',  icono: 'bx-pencil' },
-            { id: 3, nombre: 'Tecnología',  icono: 'bx-laptop' },
-            { id: 4, nombre: 'Arte',        icono: 'bx-palette' },
-            { id: 5, nombre: 'Textos',      icono: 'bx-library' },
-        ];
+        // Asumiendo que URL_BACKEND ya está definida globalmente en tu config.js
+        let CATEGORIAS = [];
+        let PRODUCTOS = [];
+        let CLIENTES = [];
 
-        const PRODUCTOS = [
-            { id: 1,  nombre: 'Cuaderno Espiral A4 Rayado',   precio: 8.50,  stock: 12, cat: 1, img: 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=400&h=400&fit=crop' },
-            { id: 2,  nombre: 'Lápiz Artesco 2B Pack x6',     precio: 5.00,  stock: 30, cat: 2, img: 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400&h=400&fit=crop' },
-            { id: 3,  nombre: 'Cuaderno Tapa Dura 200 hojas', precio: 15.00, stock: 8,  cat: 1, img: 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=400&h=400&fit=crop' },
-            { id: 4,  nombre: 'Lapicero Pilot G2 Azul',       precio: 3.50,  stock: 50, cat: 2, img: 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400&h=400&fit=crop' },
-            { id: 5,  nombre: 'Calculadora Científica Casio', precio: 85.00, stock: 5,  cat: 3, img: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&h=400&fit=crop' },
-            { id: 6,  nombre: 'Set de Pinceles x12 Arte',     precio: 22.00, stock: 10, cat: 4, img: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&h=400&fit=crop' },
-            { id: 7,  nombre: 'Libro Matemática 3er Grado',   precio: 35.00, stock: 15, cat: 5, img: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=400&fit=crop' },
-            { id: 8,  nombre: 'Folder Manila A4 Pack x10',    precio: 4.00,  stock: 40, cat: 2, img: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=400&fit=crop' },
-            { id: 9,  nombre: 'Cuaderno Cuadriculado A5',     precio: 6.50,  stock: 20, cat: 1, img: 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=400&h=400&fit=crop' },
-            { id: 10, nombre: 'Colores Faber Castell x24',    precio: 28.00, stock: 7,  cat: 4, img: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&h=400&fit=crop' },
-            { id: 11, nombre: 'Memoria USB 32GB Kingston',    precio: 45.00, stock: 12, cat: 3, img: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&h=400&fit=crop' },
-            { id: 12, nombre: 'Atlas del Perú Escolar',       precio: 42.00, stock: 6,  cat: 5, img: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=400&fit=crop' },
-        ];
-
-        const CLIENTES = [
-            { id: 1, nombre: 'García Rodríguez, Ana María',      tipoDoc: 'DNI', numDoc: '45678901' },
-            { id: 2, nombre: 'Torres Villanueva, Carlos',         tipoDoc: 'DNI', numDoc: '32145678' },
-            { id: 3, nombre: 'Librería El Saber S.A.C.',          tipoDoc: 'RUC', numDoc: '20567891234' },
-            { id: 4, nombre: 'López Mendoza, Patricia',           tipoDoc: 'DNI', numDoc: '71234567' },
-            { id: 5, nombre: 'Industrias Escolares E.I.R.L.',     tipoDoc: 'RUC', numDoc: '20112233445' },
-            { id: 6, nombre: 'Ramirez Soto, Diego Sebastián',     tipoDoc: 'DNI', numDoc: '72839201' },
-        ];
-
-        // =============================================
-        // ESTADO GLOBAL
-        // =============================================
         let clienteSeleccionado = null;
         let cantidades = {};
-        let categoriaActiva = 0;
+        let categoriaActiva = 0; // 0 sigue siendo "Todos"
         let textoBusqueda = '';
 
         // =============================================
@@ -772,6 +742,36 @@
         }
 
         // =============================================
+        // CARGA DE DATOS DESDE LA API (FETCH)
+        // =============================================
+        async function cargarDatosIniciales() {
+            try {
+                // 1. Cargar Categorías
+                const resCat = await fetch(`${URL_BACKEND}/api/categorias`);
+                const datosCat = await resCat.json();
+                // Mantenemos la opción "Todos" al inicio del array
+                CATEGORIAS = [{ id_categoria: 0, nombre: 'Todos', icono: 'bx-grid-alt' }, ...datosCat];
+
+                // 2. Cargar Productos Activos
+                const resProd = await fetch(`${URL_BACKEND}/api/productos`);
+                PRODUCTOS = await resProd.json();
+
+                // 3. Cargar Clientes para la búsqueda interna
+                const resCli = await fetch(`${URL_BACKEND}/api/clientes`);
+                CLIENTES = await resCli.json();
+
+                // Una vez cargado todo con éxito, renderizamos la interfaz
+                renderizarCategorias();
+                renderizarProductos();
+                validarBotonSiguiente();
+
+            } catch (error) {
+                console.error("Error cargando los datos del sistema:", error);
+                alert("Hubo un problema al conectar con el servidor. Revisa la terminal del backend.");
+            }
+        }
+
+        // =============================================
         // RENDERIZAR CATEGORÍAS
         // =============================================
         function renderizarCategorias() {
@@ -780,10 +780,11 @@
 
             CATEGORIAS.forEach(cat => {
                 const btn = document.createElement('button');
-                btn.className = 'btn-categoria' + (cat.id === categoriaActiva ? ' activo' : '');
+                // Ajustado a id_categoria de la BD
+                btn.className = 'btn-categoria' + (cat.id_categoria === categoriaActiva ? ' activo' : '');
                 btn.innerHTML = `<i class='bx ${cat.icono}'></i> ${cat.nombre}`;
                 btn.onclick = () => {
-                    categoriaActiva = cat.id;
+                    categoriaActiva = cat.id_categoria;
                     renderizarCategorias();
                     renderizarProductos();
                 };
@@ -792,15 +793,16 @@
         }
 
         // =============================================
-        // RENDERIZAR PRODUCTOS
+        // RENDERIZAR PRODUCTOS (Mapeado a columnas de BD)
         // =============================================
         function renderizarProductos() {
             const grid = document.getElementById('gridProductos');
             const busqueda = textoBusqueda.toLowerCase().trim();
 
             const filtrados = PRODUCTOS.filter(p => {
-                const matchCat = categoriaActiva === 0 || p.cat === categoriaActiva;
-                const matchBusq = !busqueda || p.nombre.toLowerCase().includes(busqueda);
+                // Ajustado a id_categoria
+                const matchCat = categoriaActiva === 0 || p.id_categoria === categoriaActiva;
+                const matchBusq = !busqueda || p.nombre.toLowerCase().includes(busqueda) || p.codigo.toLowerCase().includes(busqueda);
                 return matchCat && matchBusq;
             });
 
@@ -815,31 +817,32 @@
             }
 
             grid.innerHTML = filtrados.map(p => {
-                const cant = cantidades[p.id] || 0;
+                // Ajustado a id_producto
+                const cant = cantidades[p.id_producto] || 0;
                 return `
-                <div class="card-producto ${cant > 0 ? 'seleccionado' : ''}" id="card-${p.id}">
+                <div class="card-producto ${cant > 0 ? 'seleccionado' : ''}" id="card-${p.id_producto}">
                     <div class="card-imagen-contenedor">
-                        <img src="${p.img}" alt="${p.nombre}" class="card-imagen"
+                        <img src="${p.url_imagen}" alt="${p.nombre}" class="card-imagen"
                              onerror="this.style.background='#e2e8f0'; this.src='';">
                     </div>
                     <div class="card-detalles">
                         <div class="card-nombre">${p.nombre}</div>
                         <div class="card-info-row">
                             <span class="card-info-label">Stock actual:</span>
-                            <span class="card-info-valor">${p.stock}</span>
+                            <span class="card-info-valor">${p.stock_actual}</span>
                         </div>
                         <div class="card-info-row">
                             <span class="card-info-label">Precio:</span>
-                            <span class="card-info-valor card-info-precio">S/${p.precio.toFixed(2)}</span>
+                            <span class="card-info-valor card-info-precio">S/${parseFloat(p.precio_venta).toFixed(2)}</span>
                         </div>
                     </div>
                     <div class="card-selector">
-                        <button class="btn-cantidad" onclick="cambiarCantidad(${p.id}, -1, ${p.stock})">−</button>
+                        <button class="btn-cantidad" onclick="cambiarCantidad(${p.id_producto}, -1, ${p.stock_actual})">−</button>
                         <input type="number" class="input-cantidad"
-                               id="input-${p.id}" value="${cant}" min="0" max="${p.stock}"
-                               onchange="setCantidad(${p.id}, this.value, ${p.stock})"
+                               id="input-${p.id_producto}" value="${cant}" min="0" max="${p.stock_actual}"
+                               onchange="setCantidad(${p.id_producto}, this.value, ${p.stock_actual})"
                                onfocus="this.select()">
-                        <button class="btn-cantidad" onclick="cambiarCantidad(${p.id}, 1, ${p.stock})">+</button>
+                        <button class="btn-cantidad" onclick="cambiarCantidad(${p.id_producto}, 1, ${p.stock_actual})">+</button>
                     </div>
                 </div>`;
             }).join('');
@@ -861,6 +864,7 @@
             actualizarBadge();
         }
 
+        // Se mantiene igual, solo recibe el id_producto
         function setCantidad(id, valor, stockMax) {
             const nueva = Math.max(0, Math.min(parseInt(valor) || 0, stockMax));
             cantidades[id] = nueva;
@@ -904,7 +908,7 @@
         }
 
         // =============================================
-        // MODAL CLIENTE
+        // MODAL CLIENTE (Mapeado a estructura real de BD)
         // =============================================
         function abrirModalCliente() {
             document.getElementById('modalCliente').classList.remove('oculto');
@@ -915,6 +919,7 @@
             setTimeout(() => input.focus(), 80);
         }
 
+        // Se mantiene igual
         function cerrarModalCliente() {
             document.getElementById('modalCliente').classList.add('oculto');
         }
@@ -928,8 +933,9 @@
                 return;
             }
 
+            // Filtrado mapeado a las propiedades de tu tabla Cliente (nombre, tipo_documento, num_documento)
             const resultados = CLIENTES.filter(c =>
-                c.nombre.toLowerCase().includes(busq) || c.numDoc.includes(busq)
+                c.nombre.toLowerCase().includes(busq) || c.num_documento.includes(busq)
             );
 
             if (resultados.length === 0) {
@@ -938,22 +944,22 @@
             }
 
             lista.innerHTML = resultados.map(c => `
-                <div class="resultado-item" onclick="seleccionarCliente(${c.id})">
+                <div class="resultado-item" onclick="seleccionarCliente(${c.id_cliente})">
                     <span class="resultado-nombre">${c.nombre}</span>
-                    <span class="resultado-doc">${c.tipoDoc}: ${c.numDoc}</span>
+                    <span class="resultado-doc">${c.tipo_documento}: ${c.num_documento}</span>
                 </div>
             `).join('');
         }
 
         function seleccionarCliente(id) {
-            const cliente = CLIENTES.find(c => c.id === id);
+            const cliente = CLIENTES.find(c => c.id_cliente === id);
             if (!cliente) return;
 
             clienteSeleccionado = cliente;
 
             document.getElementById('btnIngresarCliente').classList.add('oculto');
             document.getElementById('clienteNombre').textContent = cliente.nombre;
-            document.getElementById('clienteDoc').textContent = `${cliente.tipoDoc}: ${cliente.numDoc}`;
+            document.getElementById('clienteDoc').textContent = `${cliente.tipo_documento}: ${cliente.num_documento}`;
             document.getElementById('panelCliente').classList.remove('oculto');
 
             cerrarModalCliente();
@@ -965,7 +971,6 @@
             window.location.href = 'registrar-cliente.html';
         }
 
-        // Cerrar modal al hacer clic en el overlay
         document.getElementById('modalCliente').addEventListener('click', function(e) {
             if (e.target === this) cerrarModalCliente();
         });
@@ -1000,7 +1005,7 @@
         }
 
         // =============================================
-        // INICIALIZACIÓN
+        // DISPARADOR DE INICIALIZACIÓN ASÍNCRONA
         // =============================================
         renderizarCategorias();
         renderizarProductos();
