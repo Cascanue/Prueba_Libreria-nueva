@@ -773,7 +773,7 @@
             }
         }
 
-        // =============================================
+       // =============================================
         // RENDERIZAR CATEGORÍAS
         // =============================================
         function renderizarCategorias() {
@@ -782,14 +782,18 @@
 
             CATEGORIAS.forEach(cat => {
                 const btn = document.createElement('button');
-                // Ajustado a id_categoria de la BD
                 btn.className = 'btn-categoria' + (cat.id_categoria === categoriaActiva ? ' activo' : '');
                 btn.innerHTML = `<i class='bx ${cat.icono}'></i> ${cat.nombre}`;
+                
                 btn.onclick = () => {
                     categoriaActiva = cat.id_categoria;
                     renderizarCategorias();
                     renderizarProductos();
+                    
+                    // ✨ LA MAGIA UX: Regresar el scroll al tope
+                    document.getElementById('gridProductos').scrollTop = 0;
                 };
+                
                 contenedor.appendChild(btn);
             });
         }
