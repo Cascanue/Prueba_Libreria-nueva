@@ -175,6 +175,83 @@ app.get('/api/clientes', (req, res) => {
     });
 });
 
+// 6. RUTA GUARDAR PEDIDO (Con Transacción MySQL)
+app.post('/api/guardar-pedido', (req, res) => {
+    const { id_cliente, id_usuario, total, detalles } = req.body;
+
+    // Pedimos una conexión exclusiva del pool para manejar la transacción
+    db.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error obteniendo conexión:', err);
+            return res.status(500).json({ exito: false, mensaje: 'Error de conexión a la BD' });
+        }
+
+        // Iniciamos la transacción (Si algo falla, hacemos ROLLBACK)
+        connection.beginTransaction(err => {
+            if (err) {
+                connection.release();
+                return res.status(500).json({ exito: false, mensaje: 'Error al iniciar transacción' });
+            }
+
+            // PASO A: Insertar la cabecera en la tabla Pedido
+            const queryPedido = `INSERT INTO Pedido (id_cliente, id_usuario, total, estado) VALUES (?, ?, ?, 'Completado')`;
+            
+            connection.query(queryPedido, [id_cliente, id_usuario, total], (err, resultPedido) => {
+                if (err) {
+                    return connection.rollback(() => {
+                        console.error('Error en Cabecera Pedido:', err);
+                        connection.release();
+                        res.status(500).json({ exito: false, mensaje: 'Error guardando cabecera del pedido' });
+                    });
+                }
+
+                // Capturamos el ID del pedido recién creado
+                const id_pedido = resultPedido.insertId;
+
+                // PASO B: Preparar y guardar los Detalles del Pedido
+                // MySQL permite insertar múltiples filas a la vez pasando un array de arrays
+                const detallesValues = detalles.map(item => [
+                    id_pedido, 
+                    item.id_producto, 
+                    item.cantidad, 
+                    item.precio_venta, 
+                    (item.cantidad * item.precio_venta) // subtotal
+                ]);
+
+                const queryDetalles = `INSERT INTO Detalle_Pedido (id_pedido, id_producto, cantidad, precio_unitario, subtotal) VALUES ?`;
+
+                connection.query(queryDetalles, [detallesValues], (err, resultDetalles) => {
+                    if (err) {
+                        return connection.rollback(() => {
+                            console.error('Error en Detalle Pedido:', err);
+                            connection.release();
+                            res.status(500).json({ exito: false, mensaje: 'Error guardando detalles del pedido' });
+                        });
+                    }
+
+                    // PASO C: Si todo fue un éxito, confirmamos la transacción (COMMIT)
+                    connection.commit(err => {
+                        if (err) {
+                            return connection.rollback(() => {
+                                connection.release();
+                                res.status(500).json({ exito: false, mensaje: 'Error al confirmar la transacción' });
+                            });
+                        }
+                        
+                        // Liberamos la conexión y respondemos al frontend
+                        connection.release();
+                        res.status(200).json({ 
+                            exito: true, 
+                            id_pedido: id_pedido,
+                            mensaje: 'Pedido y detalles registrados correctamente' 
+                        });
+                    });
+                });
+            });
+        });
+    });
+});
+
 // ==========================================
 // E. ENCENDIDO DEL SERVIDOR
 // ==========================================
