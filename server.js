@@ -103,19 +103,18 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// 2. RUTA REGISTRAR CLIENTE (Con Auditoría Básica)
+// 2. RUTA REGISTRAR CLIENTE
 app.post('/api/registrar-cliente', (req, res) => {
-    const { tipoDoc, numDoc, nombreCompleto, telefono, correo, idCreador } = req.body;
+    const { tipoDoc, numDoc, nombres, apellidoPaterno, apellidoMaterno, telefono, correo, idCreador } = req.body;
     
     const query = `
-        INSERT INTO Cliente (tipo_documento, numero_documento, nombre_razon_social, telefono, correo, created_by) 
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO Cliente (tipo_documento, numero_documento, nombres, apellido_paterno, apellido_materno, telefono, correo, created_by) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
     
-    db.query(query, [tipoDoc, numDoc, nombreCompleto, telefono, correo, idCreador], (err, results) => {
+    db.query(query, [tipoDoc, numDoc, nombres, apellidoPaterno, apellidoMaterno, telefono, correo, idCreador], (err, results) => {
         if (err) {
             console.error('Error guardando cliente:', err);
-            // Validar si el DNI/RUC ya existe (numero_documento es UNIQUE en la BD)
             if (err.code === 'ER_DUP_ENTRY') {
                 return res.status(400).json({ exito: false, mensaje: 'Este documento ya está registrado en el sistema.' });
             }
@@ -161,9 +160,9 @@ app.get('/api/productos', (req, res) => {
 
 // 5. OBTENER CLIENTES (Para el buscador del modal)
 app.get('/api/clientes', (req, res) => {
-    // Usamos 'AS' para renombrar las columnas en la consulta y que encajen perfecto con tu frontend
+    // Usamos CONCAT para unir los 3 campos y mandarlos como un solo "nombre" al frontend
     const query = `
-        SELECT id_cliente, nombre_razon_social AS nombre, tipo_documento, numero_documento AS num_documento 
+        SELECT id_cliente, CONCAT(nombres, ' ', apellido_paterno, ' ', apellido_materno) AS nombre, tipo_documento, numero_documento AS num_documento 
         FROM Cliente
     `;
     

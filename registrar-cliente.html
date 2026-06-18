@@ -56,10 +56,22 @@
                     </div>
                 </div>
 
-                <div class="input-grupo">
-                    <label>Apellidos y Nombres / Razón Social</label>
-                    <input type="text" id="nombreCompleto" class="input-moderno" placeholder="Ej. Vasquez Marquina..." required
-                           oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')">
+                <div class="fila-doble">
+                    <div class="input-grupo">
+                        <label>Nombres</label>
+                        <input type="text" id="nombres" class="input-moderno" placeholder="Ej. Yair Asael..." required
+                               oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')">
+                    </div>
+                    <div class="input-grupo">
+                        <label>Apellido Paterno</label>
+                        <input type="text" id="apellidoPaterno" class="input-moderno" placeholder="Ej. Vasquez" required
+                               oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')">
+                    </div>
+                    <div class="input-grupo">
+                        <label>Apellido Materno</label>
+                        <input type="text" id="apellidoMaterno" class="input-moderno" placeholder="Ej. Marquina" required
+                               oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')">
+                    </div>
                 </div>
 
                 <div class="fila-doble">
@@ -147,14 +159,16 @@ document.getElementById('formRegistroCliente').addEventListener('submit', async 
         return;
     }
     
-    // 2. Armar el paquete de datos
+    // 2. Armar el paquete de datos con las 3 casillas nuevas
     const datosCliente = {
         tipoDoc: document.getElementById('tipoDoc').value,
         numDoc: document.getElementById('numDoc').value,
-        nombreCompleto: document.getElementById('nombreCompleto').value,
+        nombres: document.getElementById('nombres').value,
+        apellidoPaterno: document.getElementById('apellidoPaterno').value,
+        apellidoMaterno: document.getElementById('apellidoMaterno').value,
         telefono: telefono,
         correo: document.getElementById('correo').value,
-        idCreador: localStorage.getItem('idUsuario') // ¡Sacamos el ID de quien inició sesión!
+        idCreador: localStorage.getItem('idUsuario')
     };
 
     // 3. Enviar al Backend
