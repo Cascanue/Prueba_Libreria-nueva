@@ -194,7 +194,7 @@ app.post('/api/guardar-pedido', (req, res) => {
             }
 
             // PASO A: Insertar la cabecera en la tabla Pedido
-            const queryPedido = `INSERT INTO Pedido (id_cliente, id_usuario, total, estado) VALUES (?, ?, ?, 'Completado')`;
+            const queryPedido = `INSERT INTO Pedido (id_cliente, id_usuario, total, estado) VALUES (?, ?, ?, 'Pendiente')`;
             
             connection.query(queryPedido, [id_cliente, id_usuario, total], (err, resultPedido) => {
                 if (err) {
