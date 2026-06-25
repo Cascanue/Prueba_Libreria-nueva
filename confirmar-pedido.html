@@ -467,12 +467,11 @@
         // =============================================
         function renderizarCliente() {
             const cliente = pedido.cliente || {};
-            // Usamos tipo_documento y num_documento (nombres de tu BD)
             document.getElementById('clienteDniLabel').textContent = `${cliente.tipo_documento || 'DNI'}:`;
             document.getElementById('clienteDni').textContent = cliente.num_documento || '-';
             document.getElementById('clienteNombre').textContent = cliente.nombre || '-';
             
-            // Ponemos "No registrado" por si el cliente no dio correo o teléfono
+            // Añadimos un valor por defecto en caso el cliente no haya dado esos datos
             document.getElementById('clienteCorreo').textContent = cliente.correo || 'No registrado';
             document.getElementById('clienteTelefono').textContent = cliente.telefono || 'No registrado';
         }

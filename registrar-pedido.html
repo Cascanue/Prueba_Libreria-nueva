@@ -767,6 +767,30 @@
                 renderizarProductos();
                 validarBotonSiguiente();
 
+                // 1. Leemos la URL para ver si venimos de registrar un pedido
+                const urlParams = new URLSearchParams(window.location.search);
+                const origen = urlParams.get('origen');
+
+                if (origen === 'pedido') {
+                // MODO PEDIDO: Cambiamos el texto y la función del botón principal
+                const btnVolver = document.getElementById('ID_DE_TU_BOTON_VOLVER_AL_MENU'); // Reemplaza con tu ID real
+                btnVolver.innerHTML = "<i class='bx bx-cart'></i> Volver al Pedido";
+                btnVolver.onclick = function() {
+                    window.location.href = 'registrar-pedido.html';
+                };
+
+                // Ocultamos el botón de "Registrar Nuevo Cliente" para que no interrumpa el flujo
+                const btnNuevo = document.getElementById('ID_DE_TU_BOTON_REGISTRAR_NUEVO'); // Reemplaza con tu ID real
+                if(btnNuevo) btnNuevo.style.display = 'none';
+                
+                } else {
+                // MODO NORMAL: Se mantienen las funciones por defecto que ya tenías
+                // (Volver al menú y registrar otro cliente)
+                }
+
+                // Finalmente, abres tu modal de éxito como lo hacías normalmente
+                abrirModalExito();
+
             } catch (error) {
                 console.error("Error cargando los datos del sistema:", error);
                 alert("Hubo un problema al conectar con el servidor. Revisa la terminal del backend.");
@@ -975,7 +999,8 @@
 
         function irARegistrarCliente() {
             cerrarModalCliente();
-            window.location.href = 'registrar-cliente.html';
+            // Le pasamos un rastro en la URL para que la otra pantalla sepa qué hacer
+            window.location.href = 'registrar-cliente.html?origen=pedido';
         }
 
         document.getElementById('modalCliente').addEventListener('click', function(e) {
