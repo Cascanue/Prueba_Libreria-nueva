@@ -162,7 +162,7 @@ app.get('/api/productos', (req, res) => {
 app.get('/api/clientes', (req, res) => {
     // Añadimos telefono y correo a la consulta
     const query = `
-        SELECT id_cliente, nombre_razon_social AS nombre, tipo_documento, numero_documento AS num_documento, telefono, correo 
+        SELECT numero_documento, nombres AS nombre, tipo_documento, numero_documento AS num_documento, telefono, correo 
         FROM Cliente
     `;
     
