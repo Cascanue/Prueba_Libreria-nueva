@@ -283,13 +283,38 @@ app.get('/api/admin/resumen', async (req, res) => {
 });
 
 // 8. CRUD PRODUCTOS
-app.post('/api/productos', (req, res) => {
-    const { codigo, nombre, descripcion, precio_venta, stock_actual, stock_minimo, id_categoria } = req.body;
-    const query = 'INSERT INTO Producto (codigo, nombre, descripcion, precio_venta, stock_actual, stock_minimo, id_categoria, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 1)';
-    db.query(query, [codigo, nombre, descripcion, precio_venta, stock_actual, stock_minimo, id_categoria], (err) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ exito: true });
-    });
+app.post('/api/productos', async (req, res) => {
+    try {
+        const { nombre, descripcion, precio_venta, stock_actual, stock_minimo, id_categoria } = req.body;
+        const p = db.promise();
+        
+        // 1. Obtener la categoría para generar el prefijo
+        const [[categoria]] = await p.query('SELECT nombre FROM Categoria WHERE id_categoria = ?', [id_categoria]);
+        if (!categoria) return res.status(400).json({ error: 'Categoría no válida' });
+        
+        // El prefijo son las 3 primeras letras en mayúscula (ej. "LIT" para Literatura)
+        const prefijo = categoria.nombre.substring(0, 3).toUpperCase();
+        
+        // 2. Buscar el número más alto para ese prefijo
+        const [[result]] = await p.query(
+            `SELECT MAX(CAST(SUBSTRING_INDEX(codigo, '-', -1) AS UNSIGNED)) as maxNum 
+             FROM Producto WHERE codigo LIKE ?`, 
+            [`${prefijo}-%`]
+        );
+        
+        // 3. Generar el nuevo código (ej. LIT-001)
+        const nextNum = (result.maxNum || 0) + 1;
+        const nuevoCodigo = `${prefijo}-${String(nextNum).padStart(3, '0')}`;
+        
+        // 4. Guardar en la base de datos
+        const query = 'INSERT INTO Producto (codigo, nombre, descripcion, precio_venta, stock_actual, stock_minimo, id_categoria, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 1)';
+        await p.query(query, [nuevoCodigo, nombre, descripcion, precio_venta, stock_actual, stock_minimo, id_categoria]);
+        
+        res.json({ exito: true, codigo_generado: nuevoCodigo });
+    } catch (err) {
+        console.error('Error generando producto:', err);
+        res.status(500).json({ error: 'Error al crear producto' });
+    }
 });
 app.put('/api/productos/:id', (req, res) => {
     const { codigo, nombre, descripcion, precio_venta, stock_actual, stock_minimo, id_categoria } = req.body;

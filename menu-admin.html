@@ -148,7 +148,7 @@ select.input-moderno{cursor:pointer}
     <div class="modal-header"><span class="modal-titulo" id="titulo-modal-producto">Nuevo Producto</span><button class="btn-cerrar-modal" onclick="cerrarModal('modal-producto')">&times;</button></div>
     <div class="modal-body">
       <form id="form-producto"><input type="hidden" id="producto-id">
-        <div class="fila-doble"><div class="input-grupo" style="flex:0.4"><label>Codigo</label><input type="text" id="producto-codigo" class="input-moderno" placeholder="LIB-001" required></div><div class="input-grupo"><label>Nombre</label><input type="text" id="producto-nombre" class="input-moderno" required></div></div>
+        <div class="fila-doble"><div class="input-grupo" style="flex:0.4"><label>Codigo</label><input type="text" id="producto-codigo" class="input-moderno" placeholder="Autogenerado" readonly></div><div class="input-grupo"><label>Nombre</label><input type="text" id="producto-nombre" class="input-moderno" required></div></div>
         <div class="input-grupo"><label>Descripcion</label><input type="text" id="producto-descripcion" class="input-moderno"></div>
         <div class="fila-doble"><div class="input-grupo"><label>Categoria</label><select id="producto-categoria" class="input-moderno" required><option value="">- Seleccionar -</option></select></div><div class="input-grupo"><label>Precio Venta (S/)</label><input type="number" id="producto-precio" class="input-moderno" min="0" step="0.01" required></div></div>
         <div class="fila-doble"><div class="input-grupo"><label>Stock Actual</label><input type="number" id="producto-stock" class="input-moderno" min="0" required></div><div class="input-grupo"><label>Stock Minimo</label><input type="number" id="producto-stock-min" class="input-moderno" min="0" required></div></div>
@@ -349,9 +349,9 @@ async function guardarProducto() {
   const stock_minimo = parseInt(document.getElementById('producto-stock-min').value);
   const descripcion = document.getElementById('producto-descripcion').value.trim();
   const url_imagen = document.getElementById('producto-imagen').value.trim();
-  if (!codigo || !nombre || !id_categoria || isNaN(precio_venta) || isNaN(stock_actual) || isNaN(stock_minimo)) { alert('Completa todos los campos obligatorios.'); return; }
+  if (!nombre || !id_categoria || isNaN(precio_venta) || isNaN(stock_actual) || isNaN(stock_minimo)) { alert('Completa todos los campos obligatorios.'); return; }
   
-  const payload = { codigo, nombre, descripcion, id_categoria, precio_venta, stock_actual, stock_minimo, url_imagen };
+  const payload = { nombre, descripcion, id_categoria, precio_venta, stock_actual, stock_minimo, url_imagen };
   const method = productoEditar ? 'PUT' : 'POST';
   const url = URL_BACKEND + '/api/productos' + (productoEditar ? '/' + productoEditar.id_producto : '');
   
@@ -386,6 +386,9 @@ async function guardarCliente() {
   const tel = document.getElementById('cliente-telefono').value.trim();
   const correo = document.getElementById('cliente-correo').value.trim();
   if (!numDoc || !nombres || !apP || !apM) { alert('Completa los campos obligatorios.'); return; }
+  if (tipoDoc === 'DNI' && !/^\d{8}$/.test(numDoc)) { alert('El DNI debe tener exactamente 8 números.'); return; }
+  if (tipoDoc === 'RUC' && !/^\d{11}$/.test(numDoc)) { alert('El RUC debe tener exactamente 11 números.'); return; }
+  if (correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) { alert('El formato del correo no es válido.'); return; }
   
   const payload = { tipoDoc, numDoc, nombres, apellidoPaterno: apP, apellidoMaterno: apM, telefono: tel, correo, idCreador: localStorage.getItem('idUsuario') };
   // Aiven API usa camelCase en /api/registrar-cliente para insertar, pero el PUT espera snake_case (tipo_documento, numero_documento).
