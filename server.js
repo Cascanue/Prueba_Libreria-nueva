@@ -42,7 +42,7 @@ db.getConnection((err, connection) => {
         console.error('❌ Error en MySQL:', err);
     } else {
         console.log('✅ Conectado a Aiven MySQL con Pool de conexiones.');
-        
+
         // MODO AUTOMÁTICO: Crea la columna y pone tu nombre apenas enciende
         const sqlCrear = "ALTER TABLE Usuario ADD COLUMN IF NOT EXISTS nombre_completo VARCHAR(150) NOT NULL DEFAULT 'Usuario del Sistema' AFTER username;";
         const sqlActualizar = "UPDATE Usuario SET nombre_completo = 'Diego Sebastián' WHERE id_usuario = 1;";
@@ -61,10 +61,10 @@ db.getConnection((err, connection) => {
 // ==========================================
 
 // 1. RUTA DE LOGIN (Verifica credenciales y rol)
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
-    
-    // Log de intento de login (sin mostrar la contraseña por seguridad)
+
+    // Log de intento de login
     console.log("INTENTO DE LOGIN -> Usuario:", username);
 
     const query = `
@@ -74,7 +74,7 @@ app.post('/api/login', async (req, res) => {
         WHERE u.username = ? AND u.is_active = TRUE
     `;
 
-    db.query(query, [username], async (err, results) => {
+    db.query(query, [username], (err, results) => {
         if (err) {
             console.error("❌ ERROR SQL:", err);
             return res.status(500).json({ exito: false, mensaje: "Error interno del servidor" });
@@ -86,10 +86,9 @@ app.post('/api/login', async (req, res) => {
 
         const usuario = results[0];
 
-        // Comparamos la contraseña ingresada contra el hash guardado en la BD
-        // bcrypt.compare hace esto de forma segura sin exponer la contraseña real
-        const passwordCorrecta = await bcrypt.compare(password, usuario.password_hash);
-        if (!passwordCorrecta) {
+        // Retornamos a la validación clásica (texto plano)
+        // Ya no usamos bcrypt porque la base de datos no está encriptada aún
+        if (password !== usuario.password_hash) {
             return res.status(401).json({ exito: false, mensaje: "Contraseña incorrecta" });
         }
 
@@ -108,12 +107,12 @@ app.post('/api/login', async (req, res) => {
 // 2. RUTA REGISTRAR CLIENTE
 app.post('/api/registrar-cliente', (req, res) => {
     const { tipoDoc, numDoc, nombres, apellidoPaterno, apellidoMaterno, telefono, correo, idCreador } = req.body;
-    
+
     const query = `
         INSERT INTO Cliente (tipo_documento, numero_documento, nombres, apellido_paterno, apellido_materno, telefono, correo, created_by) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    
+
     db.query(query, [tipoDoc, numDoc, nombres, apellidoPaterno, apellidoMaterno, telefono, correo, idCreador], (err, results) => {
         if (err) {
             console.error('Error guardando cliente:', err);
@@ -133,7 +132,7 @@ app.post('/api/registrar-cliente', (req, res) => {
 // 3. OBTENER CATEGORÍAS
 app.get('/api/categorias', (req, res) => {
     const query = 'SELECT id_categoria, nombre, icono FROM Categoria WHERE is_active = 1';
-    
+
     db.query(query, (err, results) => {
         if (err) {
             console.error('Error al obtener categorías:', err);
@@ -150,7 +149,7 @@ app.get('/api/productos', (req, res) => {
         FROM Producto 
         WHERE is_active = 1
     `;
-    
+
     db.query(query, (err, results) => {
         if (err) {
             console.error('Error al obtener productos:', err);
@@ -172,7 +171,7 @@ app.get('/api/clientes', (req, res) => {
             correo 
         FROM Cliente
     `;
-    
+
     db.query(query, (err, results) => {
         if (err) {
             console.error('Error al obtener clientes:', err);
@@ -202,7 +201,7 @@ app.post('/api/guardar-pedido', (req, res) => {
 
             // PASO A: Insertar la cabecera en la tabla Pedido
             const queryPedido = `INSERT INTO Pedido (id_cliente, id_usuario, total, estado) VALUES (?, ?, ?, 'Pendiente')`;
-            
+
             connection.query(queryPedido, [id_cliente, id_usuario, total], (err, resultPedido) => {
                 if (err) {
                     return connection.rollback(() => {
@@ -218,10 +217,10 @@ app.post('/api/guardar-pedido', (req, res) => {
                 // PASO B: Preparar y guardar los Detalles del Pedido
                 // MySQL permite insertar múltiples filas a la vez pasando un array de arrays
                 const detallesValues = detalles.map(item => [
-                    id_pedido, 
-                    item.id_producto, 
-                    item.cantidad, 
-                    item.precio_venta, 
+                    id_pedido,
+                    item.id_producto,
+                    item.cantidad,
+                    item.precio_venta,
                     (item.cantidad * item.precio_venta) // subtotal
                 ]);
 
@@ -244,13 +243,13 @@ app.post('/api/guardar-pedido', (req, res) => {
                                 res.status(500).json({ exito: false, mensaje: 'Error al confirmar la transacción' });
                             });
                         }
-                        
+
                         // Liberamos la conexión y respondemos al frontend
                         connection.release();
-                        res.status(200).json({ 
-                            exito: true, 
+                        res.status(200).json({
+                            exito: true,
                             id_pedido: id_pedido,
-                            mensaje: 'Pedido y detalles registrados correctamente' 
+                            mensaje: 'Pedido y detalles registrados correctamente'
                         });
                     });
                 });
@@ -280,4 +279,4 @@ app.get('/procesar-pago', (req, res) => res.sendFile(__dirname + '/procesar-pago
 // ==========================================
 // Le decimos a Node que use el puerto que Render le dé, o el 3000 si estás en tu PC
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor de Book Center corriendo en el puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor de Book Center corriendo en el puerto ${PORT}`));
