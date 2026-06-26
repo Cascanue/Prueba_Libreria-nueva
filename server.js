@@ -4,6 +4,7 @@ const mysql = require('mysql2');
 const cors = require('cors');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
+const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(cors());
@@ -25,11 +26,11 @@ const upload = multer({ storage: storage });
 // B. CONEXIÓN A LA BASE DE DATOS (Aiven MySQL)
 // ==========================================
 const db = mysql.createPool({
-    host: 'mysql-955eb71-bookcenter27.b.aivencloud.com',
-    user: 'avnadmin',
+    host: process.env.AIVEN_HOST,
+    user: process.env.AIVEN_USER,
     password: process.env.AIVEN_PASSWORD,
-    port: 22639,
-    database: 'defaultdb',
+    port: process.env.AIVEN_PORT || 22639,
+    database: process.env.AIVEN_DATABASE || 'defaultdb',
     ssl: { rejectUnauthorized: false },
     waitForConnections: true,
     connectionLimit: 10,
@@ -60,11 +61,11 @@ db.getConnection((err, connection) => {
 // ==========================================
 
 // 1. RUTA DE LOGIN (Verifica credenciales y rol)
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     
-    // 👇 ESTOS DOS CONSOLE.LOG SON LOS DETECTIVES 👇
-    console.log("INTENTO DE LOGIN -> Usuario:", username, "| Contraseña:", password);
+    // Log de intento de login (sin mostrar la contraseña por seguridad)
+    console.log("INTENTO DE LOGIN -> Usuario:", username);
 
     const query = `
         SELECT u.id_usuario, u.username, u.nombre_completo, u.password_hash, r.nombre_rol 
@@ -73,13 +74,11 @@ app.post('/api/login', (req, res) => {
         WHERE u.username = ? AND u.is_active = TRUE
     `;
 
-    db.query(query, [username], (err, results) => {
+    db.query(query, [username], async (err, results) => {
         if (err) {
             console.error("❌ ERROR SQL:", err);
             return res.status(500).json({ exito: false, mensaje: "Error interno del servidor" });
         }
-
-        console.log("🔍 RESULTADO BASE DE DATOS:", results);
 
         if (results.length === 0) {
             return res.status(401).json({ exito: false, mensaje: "Usuario no encontrado" });
@@ -87,7 +86,10 @@ app.post('/api/login', (req, res) => {
 
         const usuario = results[0];
 
-        if (password !== usuario.password_hash) {
+        // Comparamos la contraseña ingresada contra el hash guardado en la BD
+        // bcrypt.compare hace esto de forma segura sin exponer la contraseña real
+        const passwordCorrecta = await bcrypt.compare(password, usuario.password_hash);
+        if (!passwordCorrecta) {
             return res.status(401).json({ exito: false, mensaje: "Contraseña incorrecta" });
         }
 
@@ -258,27 +260,24 @@ app.post('/api/guardar-pedido', (req, res) => {
 });
 
 // ==========================================
-// E. ENCENDIDO DEL SERVIDOR
+// E. RUTAS DE PÁGINAS (Sirve los archivos HTML)
+// ==========================================
+// Esto le dice a Express que la carpeta "css" y "js" son públicas
+// para que el navegador pueda cargar los estilos e íconos
+app.use('/css', express.static('css'));
+app.use('/js', express.static('js'));
+
+// Cada línea de aquí es una "puerta" que lleva a una página HTML
+app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'));
+app.get('/menu', (req, res) => res.sendFile(__dirname + '/menu.html'));
+app.get('/registrar-cliente', (req, res) => res.sendFile(__dirname + '/registrar-cliente.html'));
+app.get('/registrar-pedido', (req, res) => res.sendFile(__dirname + '/registrar-pedido.html'));
+app.get('/confirmar-pedido', (req, res) => res.sendFile(__dirname + '/confirmar-pedido.html'));
+app.get('/procesar-pago', (req, res) => res.sendFile(__dirname + '/procesar-pago.html'));
+
+// ==========================================
+// F. ENCENDIDO DEL SERVIDOR
 // ==========================================
 // Le decimos a Node que use el puerto que Render le dé, o el 3000 si estás en tu PC
 const PORT = process.env.PORT || 3000;
-// ==========================================
-// RUTA TEMPORAL PARA ACTUALIZAR BASE DE DATOS
-// ==========================================
-app.get('/api/setup-db', (req, res) => {
-    // 1. Creamos la columna
-    const sqlCrearColumna = "ALTER TABLE Usuario ADD COLUMN nombre_completo VARCHAR(150) NOT NULL DEFAULT 'Usuario del Sistema' AFTER username;";
-    
-    db.query(sqlCrearColumna, (err) => {
-        // Si hay error, probablemente es porque la columna ya se creó antes. Lo ignoramos y seguimos.
-        
-        // 2. Le asignamos tu nombre real al admin1
-        const sqlActualizarNombre = "UPDATE Usuario SET nombre_completo = 'Diego Sebastián' WHERE id_usuario = 1;";
-        
-        db.query(sqlActualizarNombre, (err2) => {
-            if(err2) return res.send("Hubo un error al actualizar los nombres: " + err2);
-            res.send("<h1 style='color: green; font-family: sans-serif;'>✅ ¡Base de datos actualizada con éxito!</h1><p style='font-family: sans-serif;'>Ya puedes cerrar esta pestaña y volver a tu Login.</p>");
-        });
-    });
-});
-app.listen(PORT, () => console.log(`🚀 Servidor de Book Center corriendo en el puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor de Book Center corriendo en el puerto ${PORT}`));

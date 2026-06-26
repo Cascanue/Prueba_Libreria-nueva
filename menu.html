@@ -62,12 +62,12 @@
                 <h3>Registrar Cliente</h3>
             </a>
 
-            <a href="registrar-pedido.html" class="modulo-card oculto" id="modPedido">
+            <a href="/registrar-pedido" class="modulo-card oculto" id="modPedido">
                 <i class='bx bx-basket icono-modulo'></i>
                 <h3>Registrar Pedido</h3>
             </a>
 
-            <a href="procesar-pago.html" class="modulo-card oculto" id="modPago">
+            <a href="/procesar-pago" class="modulo-card oculto" id="modPago">
                 <i class='bx bx-wallet icono-modulo'></i>
                 <h3>Procesar Pago</h3>
             </a>
@@ -88,14 +88,14 @@
             sessionStorage.clear(); 
             
             // 3. Te devolvemos al inicio
-            window.location.href = 'index.html'; 
+            window.location.href = '/'; 
         });
         
         // Lógica de Protección y Roles
         const rolActual = localStorage.getItem('rolUsuario');
         
         // Si alguien intenta entrar sin loguearse, lo pateamos al index
-        if (!rolActual) window.location.href = 'index.html';
+        if (!rolActual) window.location.href = '/';
 
         // Lógica de visualización según el rol
         if (rolActual === 'vendedor') {
@@ -116,13 +116,6 @@
             if (nombreActual) {
                 document.getElementById('saludoUsuario').innerText = `¡Bienvenido, ${nombreActual}!`;
             }
-
-        // Lógica para cerrar sesión correctamente
-            document.getElementById('btnCerrarSesion').addEventListener('click', (e) => {
-            e.preventDefault(); // Evitamos que el <a> nos lleve a "#"
-            localStorage.clear(); // ¡Destruimos la sesión!
-            window.location.href = 'index.html'; // Redirigimos
-        });
     </script>
 </body>
 </html>
