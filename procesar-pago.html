@@ -787,6 +787,28 @@
         .modal-titulo { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--azul-oscuro); }
         .modal-texto  { color: var(--gris); font-size: 0.9rem; margin-bottom: 0.4rem; }
         .modal-correlativo { font-weight: 800; color: var(--azul-primario); font-size: 1.05rem; margin-bottom: 1.5rem; }
+
+        /* ===== NUEVA GRILLA 2x2 PARA RESUMEN DE COMPRA ===== */
+        .grid-resumen-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+            grid-auto-rows: min-content; /* Se ajustan al tamaño de la tabla/contenido */
+            gap: 1.5rem;
+            align-items: start; /* Para que las tarjetas no se estiren verticalmente si la otra es más alta */
+        }
+        
+        /* Aseguramos que las tarjetas ocupen bien el ancho de su columna */
+        .grid-resumen-2x2 .tarjeta-bloque {
+            max-width: 100%;
+            margin: 0;
+        }
+
+        /* Si quieres que en pantallas muy pequeñas se vuelva a poner 1 arriba de otro */
+        @media (max-width: 900px) {
+            .grid-resumen-2x2 {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1019,7 +1041,7 @@
 
         <!-- ===== PANEL 3: RESUMEN DE COMPRA ===== -->
         <div class="panel-tab" id="panel3">
-            <div class="seccion-resumen">
+            <div class="seccion-resumen grid-resumen-2x2">
 
                 <!-- Info del pedido -->
                 <div class="tarjeta-bloque">
@@ -1097,11 +1119,17 @@
     </div>
 
     <!-- FOOTER -->
+    <!-- FOOTER -->
     <footer class="footer-pago">
-        <button class="btn-footer btn-atras" id="btnAtras" onclick="irAtras()">
-            <i class='bx bx-arrow-back'></i> ATRÁS
-        </button>
-        <div style="display:flex;gap:0.75rem;">
+        <!-- Izquierda -->
+        <div style="flex: 1;">
+            <button class="btn-footer btn-atras" id="btnAtras" onclick="irAtras()" style="display: none;">
+                <i class='bx bx-arrow-back'></i> ATRÁS
+            </button>
+        </div>
+        
+        <!-- Derecha -->
+        <div style="display:flex;gap:0.75rem; justify-content: flex-end; flex: 1;">
             <button class="btn-footer btn-siguiente" id="btnSiguiente" onclick="irSiguiente()" disabled>
                 SIGUIENTE <i class='bx bx-right-arrow-alt'></i>
             </button>
@@ -1204,9 +1232,9 @@
         badge.textContent = data.estado || '—';
         badge.className = 'badge-estado-pedido ' + (data.estado || '').toLowerCase();
 
-        // Asegúrate de que los IDs coincidan con los de tu HTML
-        document.getElementById('txtCliente').textContent = `${data.nombres} ${data.apellido_paterno}`;
-        document.getElementById('txtDocumento').textContent = `${data.tipo_documento}: ${data.numero_documento}`;
+        // AQUÍ ESTABA EL ERROR. Ahora apunta a los IDs correctos de tu HTML
+        document.getElementById('infoCliente').textContent = `${data.nombres} ${data.apellido_paterno}`;
+        document.getElementById('infoDoc').textContent = `${data.tipo_documento}: ${data.numero_documento}`;
         document.getElementById('infoFecha').textContent    = ` ${formatearFecha(data.fecha_pedido)}`;
         document.getElementById('infoCantidad').textContent = ` ${(data.detalles || []).length} producto(s)`;
 
