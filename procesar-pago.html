@@ -1204,8 +1204,9 @@
         badge.textContent = data.estado || '—';
         badge.className = 'badge-estado-pedido ' + (data.estado || '').toLowerCase();
 
-        document.getElementById('infoCliente').textContent  = ` ${data.nombre_cliente || '—'}`;
-        document.getElementById('infoDoc').textContent      = ` ${data.tipo_documento || ''} ${data.numero_documento || ''}`.trim() || ' —';
+        // Asegúrate de que los IDs coincidan con los de tu HTML
+        document.getElementById('txtCliente').textContent = `${data.nombres} ${data.apellido_paterno}`;
+        document.getElementById('txtDocumento').textContent = `${data.tipo_documento}: ${data.numero_documento}`;
         document.getElementById('infoFecha').textContent    = ` ${formatearFecha(data.fecha_pedido)}`;
         document.getElementById('infoCantidad').textContent = ` ${(data.detalles || []).length} producto(s)`;
 

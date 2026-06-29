@@ -398,12 +398,10 @@ app.put('/api/admin/comprobantes/:id/anular', (req, res) => {
 // 12. OBTENER PEDIDO POR ID (Para módulo de pago)
 app.get('/api/pedidos/:id', (req, res) => {
     const queryPedido = `
-        SELECT p.id_pedido, p.fecha_pedido, p.total, p.estado,
-               CONCAT_WS(' ', c.nombres, c.apellido_paterno, c.apellido_materno) AS nombre_cliente,
-               c.tipo_documento, c.numero_documento, c.telefono, c.correo
-        FROM Pedido p
-        LEFT JOIN Cliente c ON p.id_cliente = c.id_cliente
-        WHERE p.id_pedido = ?
+        SELECT p.*, c.nombres, c.apellido_paterno, c.tipo_documento, c.numero_documento 
+            FROM Pedido p 
+            INNER JOIN Cliente c ON p.id_cliente = c.id_cliente 
+            WHERE p.id_pedido = ?
     `;
     const queryDetalles = `
         SELECT dp.cantidad, dp.precio_unitario, dp.subtotal, pr.nombre, pr.url_imagen, pr.codigo
